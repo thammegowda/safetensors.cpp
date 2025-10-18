@@ -1,3 +1,5 @@
+> Original Repo URL: https://github.com/carsonpo/safetensors.cpp
+
 # Safetensors.cpp
 
 > Zero<sup>*</sup> Dependency Safetensors Loading and Storing with C++ and LibTorch
