@@ -124,6 +124,57 @@ namespace safetensors
             return result;
         }
 
+        inline void skipValue()
+        {
+            skipWhitespace();
+            if (json[pos] == '"')
+            {
+                // Skip string
+                parseString();
+            }
+            else if (json[pos] == '[')
+            {
+                // Skip array
+                pos++;
+                while (json[pos] != ']')
+                {
+                    skipValue();
+                    skipWhitespace();
+                    if (json[pos] == ',')
+                        pos++;
+                }
+                pos++; // Skip closing bracket
+            }
+            else if (json[pos] == '{')
+            {
+                // Skip object
+                pos++;
+                while (json[pos] != '}')
+                {
+                    skipWhitespace();
+                    if (json[pos] == '"')
+                    {
+                        parseString(); // Skip key
+                        skipWhitespace();
+                        if (json[pos] == ':')
+                            pos++;
+                        skipValue(); // Skip value
+                        skipWhitespace();
+                        if (json[pos] == ',')
+                            pos++;
+                    }
+                }
+                pos++; // Skip closing brace
+            }
+            else
+            {
+                // Skip number, boolean, or null
+                while (json[pos] != ',' && json[pos] != '}' && json[pos] != ']' && 
+                       json[pos] != ' ' && json[pos] != '\n' && json[pos] != '\r' && json[pos] != '\t')
+                    pos++;
+            }
+        }
+
         inline TensorInfo parseTensorInfo()
         {
             TensorInfo info;
@@ -150,8 +201,7 @@ namespace safetensors
                 else
                 {
                     // Skip unknown fields
-                    while (json[pos] != ',' && json[pos] != '}')
-                        pos++;
+                    skipValue();
                 }
                 skipWhitespace();
                 if (json[pos] == ',')
@@ -183,9 +233,8 @@ namespace safetensors
                 }
                 else
                 {
-                    // Skip metadata
-                    while (json[pos] != ',' && json[pos] != '}')
-                        pos++;
+                    // Skip metadata value (which is a JSON object)
+                    skipValue();
                 }
                 skipWhitespace();
                 if (json[pos] == ',')
