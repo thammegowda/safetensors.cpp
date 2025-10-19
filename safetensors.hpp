@@ -413,7 +413,7 @@ namespace safetensors {
 
       auto cpu_tensor = tensor.to(torch::kCPU).contiguous();
 
-      if (cpu_tensor.dtype() == torch::kFloat16 || cpu_tensor.dtype() == torch::kFloat32 || cpu_tensor.dtype() == torch::kFloat64) {
+      if (is_big_endian() && (cpu_tensor.dtype() == torch::kFloat16 || cpu_tensor.dtype() == torch::kFloat32 || cpu_tensor.dtype() == torch::kFloat64)) {
         cpu_tensor = cpu_tensor.to(torch::kCPU, cpu_tensor.dtype(), /*non_blocking=*/false, /*copy=*/true);
         auto data_ptr = static_cast<char*>(cpu_tensor.data_ptr());
         for (int64_t i = 0; i < cpu_tensor.numel() * cpu_tensor.element_size(); i += cpu_tensor.element_size()) {
